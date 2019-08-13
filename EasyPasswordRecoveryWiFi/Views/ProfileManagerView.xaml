@@ -1,0 +1,197 @@
+﻿<UserControl x:Class="EasyPasswordRecoveryWiFi.Views.ProfileManagerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:cal="http://www.caliburnproject.org"
+             mc:Ignorable="d" 
+             d:DesignHeight="750" d:DesignWidth="850">
+	<GroupBox Margin="5"
+              BorderBrush="Blue"
+              Header="WiFi Profile Manager"
+              BorderThickness="2"
+              FontSize="16" >
+		<GroupBox.Style>
+			<Style TargetType="{x:Type GroupBox}">
+				<Setter Property="IsEnabled" Value="True" />
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding IsBusy}" Value="True">
+						<Setter Property="IsEnabled" Value="False" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+		</GroupBox.Style>
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="*"></RowDefinition>
+			</Grid.RowDefinitions>
+			<GroupBox Grid.Row="0"
+                      Margin="5,5,5,5"
+                      Style="{x:Null}"
+                      BorderBrush="Blue"
+                      Header="WiFi Interfaces"
+                      BorderThickness="1">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="*"/>
+					</Grid.ColumnDefinitions>
+					<Label Grid.Column="0" Margin="5">Selected Interface:</Label>
+					<ComboBox Grid.Column="1" 
+                              Margin="5"
+                              ToolTip="Select WiFi interface from which you want to see profiles."
+                              HorizontalAlignment="Stretch" 
+                              ItemsSource="{Binding Interfaces, Mode=OneWay}" 
+                              DisplayMemberPath="Description"  
+                              SelectedItem="{Binding SelectedInterface, Mode=TwoWay}" />
+				</Grid>
+			</GroupBox>
+			<GroupBox Grid.Row="1"
+                      Margin="5,5,5,5"
+                      Style="{x:Null}"
+                      BorderBrush="Blue"
+                      Header="Profiles"
+                      BorderThickness="1">
+				<Grid >
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"></ColumnDefinition>
+					</Grid.ColumnDefinitions>
+					<!-- User can't sort columns because it mixes the position of the profile in the view (priority setting). -->
+					<DataGrid ToolTip="List of WiFi profiles that belong to the selected interface."
+                              SelectedItem="{Binding Path=SelectedWiFiProfile, Mode=TwoWay}"
+                              ItemsSource="{Binding WiFiProfilesViewSource.View, Mode=OneWay}"
+                              AutoGenerateColumns="False"
+                              SelectionMode="Single"
+                              SelectionUnit="FullRow"
+                              Margin="5,5,5,5"
+                              IsReadOnly="True"
+                              CanUserSortColumns="False"
+                              AlternatingRowBackground="Lavender">
+						<DataGrid.RowStyle>
+							<Style TargetType="{x:Type DataGridRow}">
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsConnected}" Value="True">
+										<Setter Property="FontWeight" Value="Bold" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</DataGrid.RowStyle>
+						<DataGrid.ContextMenu>
+							<ContextMenu>
+								<MenuItem ToolTip="Make WiFi profile the default connection profile." 
+                                          Header="Make Default" 
+                                          cal:Message.Attach="[Event Click] = [MakeDefaultCmd()]">
+								</MenuItem>
+								<MenuItem ToolTip="Increase priority of the selected WiFi profile." 
+                                          Header="Move Up" 
+                                          cal:Message.Attach="[Event Click] = [IncreasePriorityCmd()]">
+									<MenuItem.Icon>
+										<materialDesign:PackIcon Kind="ArrowUp" Height="16" Width="16" />
+									</MenuItem.Icon>
+								</MenuItem>
+								<MenuItem ToolTip="Decrease priority of the selected WiFi profile." 
+                                          Header="Move Down" 
+                                          cal:Message.Attach="[Event Click] = [DecreasePriorityCmd()]">
+									<MenuItem.Icon>
+										<materialDesign:PackIcon Kind="ArrowDown" Height="16" Width="16" />
+									</MenuItem.Icon>
+								</MenuItem>
+								<Separator />
+								<MenuItem ToolTip="Remove selected WiFi profile." 
+                                          Header="Remove" 
+                                          cal:Message.Attach="[Event Click] = [RemoveProfileCmd()]">
+									<MenuItem.Icon>
+										<materialDesign:PackIcon Kind="Minus" Height="16" Width="16" />
+									</MenuItem.Icon>
+								</MenuItem>
+								<Separator />
+								<MenuItem ToolTip="Export WiFi profile to XML file." 
+                                          Header="Export to XML" 
+                                          cal:Message.Attach="[Event Click] = [ExportProfileCmd()]">
+									<MenuItem.Icon>
+										<materialDesign:PackIcon Kind="Export" Height="16" Width="16" />
+									</MenuItem.Icon>
+								</MenuItem>
+								<MenuItem ToolTip="Import WiFi profile from XML file." 
+                                          Header="Import XML" 
+                                          cal:Message.Attach="[Event Click] = [ImportProfileCmd()]">
+									<MenuItem.Icon>
+										<materialDesign:PackIcon Kind="Import" Height="16" Width="16" />
+									</MenuItem.Icon>
+								</MenuItem>
+								<Separator/>
+								<MenuItem ToolTip="Show WiFi profile properties." 
+                                          Header="Properties" 
+                                          cal:Message.Attach="[Event Click] = [ProfilePropertiesCmd()]">
+								</MenuItem>
+							</ContextMenu>
+						</DataGrid.ContextMenu>
+						<DataGrid.Columns>
+							<DataGridTextColumn Width="25*"
+                                                Binding="{Binding Position, Mode=OneWay}"
+                                                Header="Position"></DataGridTextColumn>
+							<DataGridTextColumn Width="40*"
+                                                Binding="{Binding ProfileName, Mode=OneWay}"
+                                                Header="Profile Name"></DataGridTextColumn>
+							<DataGridTextColumn Width="40*"
+                                                Binding="{Binding Ssid, Mode=OneWay}"
+                                                Header="Ssid"></DataGridTextColumn>
+							<DataGridTextColumn Width="40*"
+                                                Binding="{Binding Authentication, Mode=OneWay}"
+                                                Header="Authentication"></DataGridTextColumn>
+							<DataGridTextColumn Width="40*"
+                                                Binding="{Binding Encryption, Mode=OneWay}"
+                                                Header="Encryption"></DataGridTextColumn>
+						</DataGrid.Columns>
+					</DataGrid>
+					<StackPanel Margin="0,5,5,0" 
+                                Grid.Column="1">
+						<Button Style="{x:Null}"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                ToolTip="Download WiFi profiles and interfaces."  
+                                Margin="0,2,0,0" 
+                                cal:Message.Attach="[Event Click] = [RefreshViewCmd()]" >
+							<materialDesign:PackIcon Kind="Refresh" Height="30" Width="30" />
+						</Button>
+						<Button Style="{x:Null}"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                ToolTip="Import WiFi profile from XML file."  
+                                Margin="0,2,0,0" 
+                                cal:Message.Attach="[Event Click] = [ImportProfileCmd()]">
+							<materialDesign:PackIcon Kind="Plus" Height="30" Width="30" />
+						</Button>
+						<Button Style="{x:Null}"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                ToolTip="Remove selected WiFi profile." 
+                                Margin="0,2,0,0" 
+                                cal:Message.Attach="[Event Click] = [RemoveProfileCmd()]">
+							<materialDesign:PackIcon Kind="Minus" Height="30" Width="30" />
+						</Button>
+						<Button Style="{x:Null}"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                ToolTip="Increase priority of the selected WiFi profile."  
+                                Margin="0,2,0,0" 
+                                cal:Message.Attach="[Event Click] = [IncreasePriorityCmd()]">
+							<materialDesign:PackIcon Kind="ArrowUp" Height="30" Width="30" />
+						</Button>
+						<Button Style="{x:Null}"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                ToolTip="Decrease priority of the selected WiFi profile."  
+                                Margin="0,2,0,0" 
+                                cal:Message.Attach="[Event Click] = [DecreasePriorityCmd()]">
+							<materialDesign:PackIcon Kind="ArrowDown" Height="30" Width="30" />
+						</Button>
+					</StackPanel>
+				</Grid>
+			</GroupBox>
+		</Grid>
+	</GroupBox>
+</UserControl>

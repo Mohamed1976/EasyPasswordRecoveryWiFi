@@ -1,0 +1,74 @@
+﻿<Window x:Class="EasyPasswordRecoveryWiFi.Views.PropertiesView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cal="http://www.caliburnproject.org"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        Icon="/Resources/Icons/WifiLogo128x128.ico"
+        Title="Properties" 
+        Height="700" Width="650">
+	<GroupBox Margin="5,5,5,5"
+              Style="{x:Null}"
+              BorderBrush="Blue"
+              Header="Properties"
+              BorderThickness="2"
+              FontSize="16" >
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"></RowDefinition>
+				<RowDefinition Height="5"></RowDefinition>
+				<RowDefinition Height="2*"></RowDefinition>
+				<RowDefinition Height="40"></RowDefinition>
+			</Grid.RowDefinitions>
+			<GroupBox Grid.Row="0"
+                      Margin="5,5,5,5"
+                      Style="{x:Null}"
+                      BorderBrush="Blue"
+                      Header="Interface"
+                      BorderThickness="1">
+				<DataGrid ItemsSource="{Binding InterfaceProperties}" 
+                          HeadersVisibility="None"
+                          IsReadOnly="True"
+                          AutoGenerateColumns="False">
+					<DataGrid.Columns>
+						<DataGridTextColumn Binding="{Binding Key}" Width="180"></DataGridTextColumn>
+						<DataGridTextColumn Binding="{Binding Value}" Width="*"></DataGridTextColumn>
+					</DataGrid.Columns>
+				</DataGrid>
+			</GroupBox>
+			<GroupBox Grid.Row="2"
+                      Margin="5,5,5,5"
+                      Style="{x:Null}"
+                      BorderBrush="Blue"
+                      Header="{Binding Display}"
+                      BorderThickness="1">
+				<DataGrid ItemsSource="{Binding Info}"
+                          IsReadOnly="True"
+                          HeadersVisibility="None" 
+                          AutoGenerateColumns="False">
+					<DataGrid.Columns>
+						<DataGridTextColumn Binding="{Binding Key}" Width="180"></DataGridTextColumn>
+						<DataGridTextColumn Binding="{Binding Value}" Width="*"></DataGridTextColumn>
+					</DataGrid.Columns>
+				</DataGrid>
+			</GroupBox>
+			<GridSplitter Grid.Row="1" 
+                          Height="5" 
+                          Width="Auto"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Center"
+                          ResizeBehavior="PreviousAndNext"
+                          ResizeDirection="Rows"></GridSplitter>
+			<StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        FlowDirection="RightToLeft">
+				<Button Width="100"
+                        Margin="8,0"
+                        Height="30"
+                        cal:Message.Attach="[Event Click] = [CloseCmd()]">Close</Button>
+			</StackPanel>
+		</Grid>
+	</GroupBox>
+</Window>

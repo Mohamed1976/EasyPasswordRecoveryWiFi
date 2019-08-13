@@ -1,0 +1,19 @@
+﻿<!--ResizeMode="CanResizeWithGrip" will display a grabber (a small dotted triangle in the lower right corner) in a StatusBar. -->
+	<Window x:Class="EasyPasswordRecoveryWiFi.Views.ShellView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:cal="http://www.caliburnproject.org"
+        mc:Ignorable="d"
+        Icon="/Resources/Icons/WifiLogo128x128.ico"
+        Title="Easy Password Recovery WiFi"
+        ResizeMode="CanResizeWithGrip"
+        Height="750" Width="850" WindowStartupLocation="CenterScreen">
+	<DockPanel>
+		<ContentControl DockPanel.Dock="Bottom" cal:View.Model="{Binding StatusBarBottom}"></ContentControl>
+		<ContentControl DockPanel.Dock="Top" cal:View.Model="{Binding HeaderMenu}"></ContentControl>
+		<ContentControl DockPanel.Dock="Left" cal:View.Model="{Binding LeftMenu}"></ContentControl>
+		<ContentControl x:Name="ActiveItem"></ContentControl>
+	</DockPanel>
+</Window>

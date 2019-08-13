@@ -1,0 +1,77 @@
+﻿<UserControl x:Class="EasyPasswordRecoveryWiFi.Views.LeftMenuView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="750" d:DesignWidth="100">
+	<Grid Width="Auto" Height="Auto" Background="#FF31577E">
+		<Grid.Style>
+			<Style TargetType="{x:Type Grid}">
+				<Setter Property="IsEnabled" Value="True" />
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding IsBusy}" Value="True">
+						<Setter Property="IsEnabled" Value="False" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+		</Grid.Style>
+		<StackPanel>
+			<Grid Height="150"></Grid>
+			<Button Height="60"
+                    Background="Transparent" 
+                    BorderThickness="0" 
+					cal:Message.Attach="[Event Click] = [HomeViewCmd()]">
+				<StackPanel Orientation="Vertical">
+					<materialDesign:PackIcon Kind="ViewDashboard" 
+                                             HorizontalAlignment="Center" 
+                                             VerticalAlignment="Center"
+                                             Height="32" 
+                                             Width="32"/>
+					<TextBlock Text="Home" />
+				</StackPanel>
+			</Button>
+			<Button Height="60" 
+                    Background="Transparent" 
+                    BorderThickness="0" 
+					cal:Message.Attach="[Event Click] = [WifiProfileManagerViewCmd()]">
+				<StackPanel  Orientation="Vertical">
+					<materialDesign:PackIcon Kind="Files" 
+                                                 HorizontalAlignment="Center" 
+                                                 VerticalAlignment="Center"
+                                                 Height="32" 
+                                                 Width="32" />
+					<TextBlock Text="Profiles"/>
+				</StackPanel>
+			</Button>
+			<Button Height="60" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+						cal:Message.Attach="[Event Click] = [SettingsViewCmd()]">
+				<StackPanel Orientation="Vertical">
+					<materialDesign:PackIcon Kind="Settings"
+                                                 HorizontalAlignment="Center" 
+                                                 VerticalAlignment="Center"
+                                                 Height="32" 
+                                                 Width="32" />
+					<TextBlock Text="Settings" />
+				</StackPanel>
+			</Button>
+			<Button Height="60" 
+                    Background="Transparent" 
+                    BorderThickness="0" 
+					cal:Message.Attach="[Event Click] = [AboutViewCmd()]">
+				<StackPanel Orientation="Vertical">
+					<materialDesign:PackIcon Kind="About"
+                                                 HorizontalAlignment="Center" 
+                                                 VerticalAlignment="Center"
+                                                 Height="32" 
+                                                 Width="32"/>
+					<TextBlock Text="About"/>
+				</StackPanel>
+			</Button>
+		</StackPanel>
+	</Grid>
+</UserControl>

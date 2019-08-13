@@ -1,0 +1,133 @@
+﻿<Window x:Class="EasyPasswordRecoveryWiFi.Views.AddRegexView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:cal="http://www.caliburnproject.org"
+        xmlns:xctk="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
+        mc:Ignorable="d"
+        Title="Regular Expression Editor"
+		Icon="/Resources/Icons/WifiLogo128x128.ico"
+		WindowStartupLocation="CenterOwner"
+		Height="700" Width="650">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="40"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+		</Grid.RowDefinitions>
+		<GroupBox Grid.Row="0"
+                  Style="{x:Null}"
+                  Margin="5"
+                  Header="Specify regular expression"
+                  BorderBrush="Blue" 
+                  BorderThickness="1">
+			<TextBox VerticalContentAlignment="Center"
+                     Text="{Binding RegEx, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+				<TextBox.Style>
+					<Style TargetType="{x:Type TextBox}">
+						<Setter Property="IsEnabled" Value="True" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsBusy}" Value="True">
+								<Setter Property="IsEnabled" Value="False" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</TextBox.Style>
+			</TextBox>
+		</GroupBox>
+		<ToolBar Grid.Row="1"
+                 Margin="2"
+                 VerticalAlignment="Stretch"
+                 HorizontalAlignment="Stretch">
+			<Label Margin="2,0,1,0" VerticalAlignment="Center">Nr. of matches to display:</Label>
+			<xctk:IntegerUpDown Width="100"                                
+                                VerticalAlignment="Center" 
+                                Margin="0,0,8,0"
+                                DisplayDefaultValueOnEmptyText="True"
+                                DefaultValue="100"
+                                Maximum="1000"
+                                Minimum="1"
+                                Value="{Binding MaxRows, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+				<xctk:IntegerUpDown.Style>
+					<Style TargetType="{x:Type xctk:IntegerUpDown}">
+						<Setter Property="IsEnabled" Value="True" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsBusy}" Value="True">
+								<Setter Property="IsEnabled" Value="False" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</xctk:IntegerUpDown.Style>
+			</xctk:IntegerUpDown>
+			<Button Style="{x:Null}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ToolTip="Start preview process."
+                    Margin="0,2,0,0"
+                    cal:Message.Attach="[Event Click] = [StartCmd()]">
+				<materialDesign:PackIcon Kind="Play" Height="30" Width="30" Foreground="Green" />
+			</Button>
+			<Button Style="{x:Null}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ToolTip="Stop preview process."
+                    Margin="0,2,0,0"
+                    cal:Message.Attach="[Event Click] = [StopCmd()]">
+				<materialDesign:PackIcon Kind="Stop" Height="30" Width="30" Foreground="Red" />
+			</Button>
+		</ToolBar>
+		<GroupBox Grid.Row="2"
+                  Margin="5,5,5,5" 
+                  Style="{x:Null}"
+                  Header="Preview matches"
+                  BorderBrush="Blue" 
+                  BorderThickness="1">
+			<ListBox ItemsSource="{Binding RegExMatches, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></ListBox>
+		</GroupBox>
+		<StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    FlowDirection="RightToLeft">
+			<Button ToolTip="Cancel selection"
+                    Width="100"
+                    Height="30"
+                    FontSize="14"
+                    Margin="8,0"
+                    VerticalAlignment="Center"
+                    cal:Message.Attach="[Event Click] = [CancelCmd()]">
+				<StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center" 
+                            Orientation="Horizontal">
+					<TextBlock Margin="5,0,0,0" Text="Cancel"></TextBlock>
+					<materialDesign:PackIcon Kind="Cancel" 
+                                             Height="16" 
+                                             Width="16" 
+                                             Margin="8,0,0,0"
+                                             VerticalAlignment="Center"/>
+				</StackPanel>
+			</Button>
+			<Button ToolTip="Select RegEx"
+                    Width="100"
+                    Height="30"
+                    FontSize="14"
+                    Margin="8,0"
+                    VerticalAlignment="Center"
+                    cal:Message.Attach="[Event Click] = [SelectCmd()]">
+				<StackPanel Orientation="Horizontal"
+                            FlowDirection="LeftToRight">
+					<materialDesign:PackIcon Kind="Check" 
+                                             Height="16" 
+                                             Width="16" 
+                                             Margin="0,0,8,0"
+                                             VerticalAlignment="Center"/>
+					<TextBlock Margin="5,0,0,0" Text="Select"></TextBlock>
+				</StackPanel>
+			</Button>
+		</StackPanel>
+		<!-- Status Bar displays info to the user. -->
+		<ContentControl Grid.Row="4" cal:View.Model="{Binding StatusBarBottom}"></ContentControl>
+	</Grid>
+</Window>

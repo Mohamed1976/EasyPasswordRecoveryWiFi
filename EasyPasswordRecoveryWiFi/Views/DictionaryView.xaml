@@ -1,0 +1,103 @@
+﻿<UserControl x:Class="EasyPasswordRecoveryWiFi.Views.DictionaryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:EasyPasswordRecoveryWiFi.Converters"
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+			 mc:Ignorable="d" 
+             d:DesignHeight="750" d:DesignWidth="850">
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="Auto"></ColumnDefinition>
+		</Grid.ColumnDefinitions>
+		<DataGrid ToolTip="Dictionaries used for password match process."
+                  SelectedItem="{Binding Path=SelectedDictionary, Mode=TwoWay}"
+                  ItemsSource="{Binding Dictionaries, Mode=TwoWay}"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  CanUserSortColumns="False"
+                  IsReadOnly="True"
+                  AlternatingRowBackground="Lavender"
+                  AutoGenerateColumns="False"
+                  Margin="5">
+			<DataGrid.Columns>
+				<DataGridTextColumn Width="40*"
+                                    Header="Filename"
+                                    Binding="{Binding Name, Mode=OneTime}">
+				</DataGridTextColumn>
+				<DataGridTextColumn Width="70*"
+                                    Header="Path" 
+                                    Binding="{Binding DirectoryName, Mode=OneTime}">
+				</DataGridTextColumn>
+				<DataGridTextColumn Width="25*"
+                                    Header="Size">
+					<DataGridTextColumn.ElementStyle>
+						<Style TargetType="{x:Type TextBlock}">
+							<Setter Property="HorizontalAlignment" Value="Right" />
+							<Setter Property="Margin" Value="0,0,2,0" />
+						</Style>
+					</DataGridTextColumn.ElementStyle>
+					<DataGridTextColumn.Binding>
+						<Binding Path="Length" Mode="OneTime">
+							<Binding.Converter>
+								<converters:BytesSuffixConverter></converters:BytesSuffixConverter>
+							</Binding.Converter>
+						</Binding>
+					</DataGridTextColumn.Binding>
+				</DataGridTextColumn>
+				<DataGridTextColumn Width="25*"
+                                    Header="Progress">
+					<DataGridTextColumn.ElementStyle>
+						<Style TargetType="{x:Type TextBlock}">
+							<Setter Property="HorizontalAlignment" Value="Right" />
+							<Setter Property="Margin" Value="0,0,2,0" />
+						</Style>
+					</DataGridTextColumn.ElementStyle>
+					<DataGridTextColumn.Binding>
+						<Binding Path="LineNumber" 
+                                 Mode="OneWay">
+						</Binding>
+					</DataGridTextColumn.Binding>
+				</DataGridTextColumn>
+			</DataGrid.Columns>
+		</DataGrid>
+		<StackPanel Margin="0,5,5,0"
+                    Grid.Column="1">
+			<Button Style="{x:Null}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ToolTip="Add dictionary."  
+                    Margin="0,2,0,0" 
+                    cal:Message.Attach="[Event Click] = [AddDictionaryCmd()]">
+				<materialDesign:PackIcon Kind="Plus" Height="30" Width="30" />
+			</Button>
+			<Button Style="{x:Null}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ToolTip="Remove dictionary."  
+                    Margin="0,2,0,0" 
+                    cal:Message.Attach="[Event Click] = [RemoveDictionaryCmd()]">
+				<materialDesign:PackIcon Kind="Minus" Height="30" Width="30" />
+			</Button>
+			<Button Style="{x:Null}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ToolTip="Move selected dictionary up the list."  
+                    Margin="0,2,0,0"
+                    cal:Message.Attach="[Event Click] = [MoveUpCmd()]">
+				<materialDesign:PackIcon Kind="ArrowUp" Height="30" Width="30" />
+			</Button>
+			<Button Style="{x:Null}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ToolTip="Move selected dictionary down the list."  
+                    Margin="0,2,0,0" 
+                    cal:Message.Attach="[Event Click] = [MoveDownCmd()]">
+				<materialDesign:PackIcon Kind="ArrowDown" Height="30" Width="30" />
+			</Button>
+		</StackPanel>
+	</Grid>
+</UserControl>
