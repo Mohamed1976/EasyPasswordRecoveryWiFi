@@ -21,23 +21,23 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		private readonly IEventAggregator _eventAggregator = null;
 		private readonly IBusyIndicator _busyIndicator = null;
 		private readonly IErrorHandler _errorHandler = null;
-		private readonly SettingsViewModel _settingsViewModel = null;
+        private readonly IConfigurationProvider _configurationProvider = null;
 
-		#endregion
+        #endregion
 
-		#region [ Constructor ]
+        #region [ Constructor ]
 
-		public DictionaryViewModel(IEventAggregator eventAggregator,
+        public DictionaryViewModel(IEventAggregator eventAggregator,
 			IBusyIndicator busyIndicator,
 			IErrorHandler errorHandler,
-			SettingsViewModel settingsViewModel)
+            IConfigurationProvider configurationProvider)
 		{
 			DisplayName = "List";
 			Dictionaries = new ObservableCollection<Dictionary>();
 			_eventAggregator = eventAggregator;
 			_busyIndicator = busyIndicator;
 			_errorHandler = errorHandler;
-			_settingsViewModel = settingsViewModel;
+			_configurationProvider = configurationProvider;
 		}
 
 		#endregion
@@ -147,15 +147,15 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		{
 			if (!string.IsNullOrEmpty(password))
 			{
-				if (_settingsViewModel.DictionaryCasing == Common.StringCasing.LowerCase)
+				if (_configurationProvider.DictionaryCasing == Common.StringCasing.LowerCase)
 				{
 					password = CultureInfo.CurrentCulture.TextInfo.ToLower(password);
 				}
-				else if (_settingsViewModel.DictionaryCasing == Common.StringCasing.UpperCase)
+				else if (_configurationProvider.DictionaryCasing == Common.StringCasing.UpperCase)
 				{
 					password = CultureInfo.CurrentCulture.TextInfo.ToUpper(password);
 				}
-				else if (_settingsViewModel.DictionaryCasing == Common.StringCasing.TitleCase)
+				else if (_configurationProvider.DictionaryCasing == Common.StringCasing.TitleCase)
 				{
 					password = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(password);
 				}
@@ -175,7 +175,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				OpenFileDialog dlg = new OpenFileDialog();
 				dlg.DefaultExt = ".txt"; // Default file extension
 				dlg.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*"; // Filter files by extension
-				dlg.InitialDirectory = _settingsViewModel.DictionariesDir;
+				dlg.InitialDirectory = _configurationProvider.DictionariesDir;
 				dlg.Title = "Import dictionaries";
 				dlg.Multiselect = true;
 
@@ -194,7 +194,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 					string file = dlg.FileNames.FirstOrDefault();
 					if (file != default(string))
 					{
-						_settingsViewModel.DictionariesDir = Path.GetDirectoryName(file);
+						_configurationProvider.DictionariesDir = Path.GetDirectoryName(file);
 					}
 				}
 			});

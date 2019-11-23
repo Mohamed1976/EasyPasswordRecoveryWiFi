@@ -55,10 +55,11 @@ namespace EasyPasswordRecoveryWiFi.Startup
 			builder.RegisterType<StorageService>().As<IStorageService>();
 			builder.RegisterType<RegExService>().As<IRegExService>().SingleInstance();
 			builder.RegisterType<BusyIndicator>().As<IBusyIndicator>().SingleInstance();
+            builder.RegisterType<ConfigurationProvider>().As<IConfigurationProvider>().SingleInstance();
 #if MOCK_DATA
             builder.RegisterType<MockWiFiAdapter>().As<IWiFiService>();
 #else
-			builder.RegisterType<NativeWiFiAdapter>().As<IWiFiService>();
+            builder.RegisterType<NativeWiFiAdapter>().As<IWiFiService>();
 #endif
 		}
 

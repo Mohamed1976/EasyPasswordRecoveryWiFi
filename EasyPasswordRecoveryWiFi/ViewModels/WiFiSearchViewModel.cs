@@ -27,7 +27,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		private readonly PropertiesViewModel _propertiesViewModel = null;
 		private readonly PasswordViewModel _passwordViewModel = null;
 		private readonly IProfileService _profileService = null;
-		private readonly SettingsViewModel _settingsViewModel = null;
+		private readonly IConfigurationProvider _configurationProvider = null;
 
 		#endregion
 
@@ -41,7 +41,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			PropertiesViewModel propertiesViewModel,
 			PasswordViewModel passwordViewModel,
 			StatusBarViewModel statusBarViewModel,
-			SettingsViewModel settingsViewModel,
+            IConfigurationProvider configurationProvider,
 			IProfileService profileService)
 		{
 			_eventAggregator = eventAggregator;
@@ -51,7 +51,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			_errorHandler = errorHandler;
 			_propertiesViewModel = propertiesViewModel;
 			_passwordViewModel = passwordViewModel;
-			_settingsViewModel = settingsViewModel;
+			_configurationProvider = configurationProvider;
 			_profileService = profileService;
 			statusBarViewModel.Name = "WiFiSearchStatusBar";
 			StatusBarBottom = statusBarViewModel;
@@ -241,7 +241,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			string ssid = SelectedAccessPoint?.Ssid;
 
 			/* Scan and download access points and interfaces. */
-			await _mainController.ScanNetworkAsync(TimeSpan.FromSeconds(_settingsViewModel.Timeout),
+			await _mainController.ScanNetworkAsync(TimeSpan.FromSeconds(_configurationProvider.Timeout),
 				CancellationToken.None);
 			IEnumerable<AccessPoint> accessPoints = await _mainController.GetWiFiAccessPointsAsync();
 			IEnumerable<Interface> interfaces = await _mainController.GetWiFiInterfacesAsync();
@@ -256,7 +256,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			{
 				/* User specified threshold is used to filter access points that meet this threshold. */
 				AccessPoints = new ObservableCollection<AccessPoint>(accessPoints
-					.Where(x => x.LinkQuality > _settingsViewModel.Threshold));
+					.Where(x => x.LinkQuality > _configurationProvider.Threshold));
 				WiFiAccessPointViewSource.Source = AccessPoints;
 				Interfaces = new ObservableCollection<Interface>(interfaces);
 			}
@@ -297,7 +297,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				$"Disconnecting from interface [{SelectedInterface.Description}]."));
 
 			await _mainController.DisconnectNetworkAsync(SelectedInterface,
-				TimeSpan.FromSeconds(_settingsViewModel.Timeout), CancellationToken.None);
+				TimeSpan.FromSeconds(_configurationProvider.Timeout), CancellationToken.None);
 
 			await DownloadAccessPointsAsync();
 
@@ -336,7 +336,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				!SelectedAccessPoint.IsPasswordRequired)
 			{
 				bool isConnected = await _mainController.ConnectNetworkAsync(SelectedAccessPoint,
-					password, TimeSpan.FromSeconds(_settingsViewModel.Timeout), CancellationToken.None);
+					password, TimeSpan.FromSeconds(_configurationProvider.Timeout), CancellationToken.None);
 
 				await DownloadAccessPointsAsync();
 

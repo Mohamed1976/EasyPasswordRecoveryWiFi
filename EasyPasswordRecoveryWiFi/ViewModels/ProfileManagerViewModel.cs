@@ -27,7 +27,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		private readonly IBusyIndicator _busyIndicator = null;
 		private readonly IWindowManager _windowManager = null;
 		private readonly PropertiesViewModel _propertiesViewModel = null;
-		private readonly SettingsViewModel _settingsViewModel = null;
+		private readonly IConfigurationProvider _configurationProvider = null;
 
 		#endregion
 
@@ -40,7 +40,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			IProfileService profileService,
 			IBusyIndicator busyIndicator,
 			PropertiesViewModel propertiesViewModel,
-			SettingsViewModel settingsViewModel)
+            IConfigurationProvider configurationProvider)
 		{
 			_mainController = mainController;
 			_eventAggregator = eventAggregator;
@@ -49,7 +49,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			_busyIndicator = busyIndicator;
 			_windowManager = windowManager;
 			_propertiesViewModel = propertiesViewModel;
-			_settingsViewModel = settingsViewModel;
+			_configurationProvider = configurationProvider;
 			WiFiProfilesViewSource = new CollectionViewSource();
 			WiFiProfilesViewSource.Filter += ApplyFilter;
 		}
@@ -356,7 +356,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				dlg.FileName = SelectedWiFiProfile.ProfileName; // Default file name
 				dlg.DefaultExt = ".xml"; // Default file extension
 				dlg.Filter = "XML file (*.xml) | *.xml"; // Filter files by extension
-				dlg.InitialDirectory = _settingsViewModel.ExportDir;
+				dlg.InitialDirectory = _configurationProvider.ExportDir;
 				dlg.Title = "Save profile As";
 
 				bool result = dlg.ShowDialog() ?? false;
@@ -367,7 +367,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 						"Exporting profile."));
 					File.WriteAllText(dlg.FileName, _profileService.Format(SelectedWiFiProfile.Xml));
 					/* Save last visited directory. */
-					_settingsViewModel.ExportDir = Path.GetDirectoryName(dlg.FileName);
+					_configurationProvider.ExportDir = Path.GetDirectoryName(dlg.FileName);
 				}
 			});
 
@@ -390,7 +390,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			OpenFileDialog dlg = new OpenFileDialog();
 			dlg.DefaultExt = ".xml"; // Default file extension
 			dlg.Filter = "XML file (*.xml) | *.xml"; // Filter files by extension
-			dlg.InitialDirectory = _settingsViewModel.ImportDir;
+			dlg.InitialDirectory = _configurationProvider.ImportDir;
 			dlg.Title = "Import profile.";
 			dlg.Multiselect = false;
 
@@ -411,7 +411,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				}
 
 				/* Set dialog initial directory to last visited directory. */
-				_settingsViewModel.ImportDir = Path.GetDirectoryName(dlg.FileName);
+				_configurationProvider.ImportDir = Path.GetDirectoryName(dlg.FileName);
 			}
 
 			if (result && !isValid)

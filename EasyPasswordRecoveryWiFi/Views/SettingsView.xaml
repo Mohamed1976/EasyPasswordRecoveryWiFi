@@ -38,7 +38,7 @@
                                  Content="None"
                                  GroupName="StringCasing">
 						<RadioButton.IsChecked>
-							<Binding Path="DictionaryCasing"
+                            <Binding Path="ConfigurationProvider.DictionaryCasing"
                                      Mode="TwoWay"
                                      ConverterParameter="{x:Static common:StringCasing.None}">
 								<Binding.Converter>
@@ -53,7 +53,7 @@
                                  Content="Force strings to UPPERCASE" 
                                  GroupName="StringCasing">
 						<RadioButton.IsChecked>
-							<Binding Path="DictionaryCasing" 
+                            <Binding Path="ConfigurationProvider.DictionaryCasing" 
                                      Mode="TwoWay"
                                      ConverterParameter="{x:Static common:StringCasing.UpperCase}">
 								<Binding.Converter>
@@ -68,7 +68,7 @@
                                  Content="Force strings to lowercase" 
                                  GroupName="StringCasing">
 						<RadioButton.IsChecked>
-							<Binding Path="DictionaryCasing" 
+                            <Binding Path="ConfigurationProvider.DictionaryCasing" 
                                      Mode="TwoWay" 
                                      ConverterParameter="{x:Static common:StringCasing.LowerCase}">
 								<Binding.Converter>
@@ -83,7 +83,7 @@
                                      Content="Force strings to Titlecase" 
                                      GroupName="StringCasing">
 						<RadioButton.IsChecked>
-							<Binding Path="DictionaryCasing" 
+                            <Binding Path="ConfigurationProvider.DictionaryCasing" 
                                      Mode="TwoWay"
                                      ConverterParameter="{x:Static common:StringCasing.TitleCase}">
 								<Binding.Converter>
@@ -107,7 +107,7 @@
                                  Margin="5,0,0,0"                                 
                                  Width="200">
 							<TextBox.Text>
-								<Binding Path="FileName" 
+                                <Binding Path="ConfigurationProvider.FileName" 
                                          Mode="TwoWay"></Binding>
 							</TextBox.Text>
 						</TextBox>
@@ -118,7 +118,7 @@
                                  IsReadOnly="True"                                     
                                  Margin="5,0,0,0" 
                                  Width="300"
-                                 Text="{Binding FilePath, Mode=OneWay}"></TextBox>
+                                 Text="{Binding ConfigurationProvider.PasswordStorageDir, Mode=OneWay}"></TextBox>
 						<Button ToolTip="Select directory where the password storage file will be stored."
                                 Width="115"
                                 Height="30"
@@ -142,7 +142,7 @@
 						</Button>
 					</StackPanel>
 					<CheckBox ToolTip="Overwrite password storage file if it exists in location."
-                              IsChecked="{Binding OverwriteFile, Mode=TwoWay}" 
+                              IsChecked="{Binding ConfigurationProvider.OverwriteFile, Mode=TwoWay}" 
                               Margin="5,2,0,0" Content="Overwrite file if exists"></CheckBox>
 				</StackPanel>
 			</GroupBox>
@@ -163,7 +163,7 @@
                                             DefaultValue="30"
                                             Maximum="60"
                                             Minimum="0"
-                                            Value="{Binding Timeout, Mode=TwoWay}">
+                                            Value="{Binding ConfigurationProvider.Timeout, Mode=TwoWay}">
 						</xctk:IntegerUpDown>
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
@@ -176,7 +176,7 @@
                                             DefaultValue="0"
                                             Maximum="99"
                                             Minimum="0"
-                                            Value="{Binding Threshold, Mode=TwoWay}">
+                                            Value="{Binding ConfigurationProvider.Threshold, Mode=TwoWay}">
 						</xctk:IntegerUpDown>
 					</StackPanel>
 				</StackPanel>

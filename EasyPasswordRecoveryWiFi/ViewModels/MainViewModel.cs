@@ -28,7 +28,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		private readonly PropertiesViewModel _propertiesViewModel = null;
 		private readonly PasswordViewModel _passwordViewModel = null;
 		private readonly IStorageService _storageService = null;
-		private readonly SettingsViewModel _settingsViewModel = null;
+		private readonly IConfigurationProvider _configurationProvider = null;
 
 		#endregion
 
@@ -43,7 +43,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			PropertiesViewModel propertiesViewModel,
 			PasswordViewModel passwordViewModel,
 			IStorageService storageService,
-			SettingsViewModel settingsViewModel,
+            IConfigurationProvider configurationProvider,
 			IEnumerable<IPasswordProvider> passwordProviders)
 		{
 			_eventAggregator = eventAggregator;
@@ -55,7 +55,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			_propertiesViewModel = propertiesViewModel;
 			_passwordViewModel = passwordViewModel;
 			_storageService = storageService;
-			_settingsViewModel = settingsViewModel;
+			_configurationProvider = configurationProvider;
 			PasswordProviders = new ObservableCollection<IPasswordProvider>(passwordProviders);
 			AccessPoints = new ObservableCollection<AccessPoint>();
 		}
@@ -276,7 +276,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				if (isValid)
 				{
 					connected = await _mainController.ConnectNetworkAsync(SelectedAccessPoint, password,
-						TimeSpan.FromSeconds(_settingsViewModel.Timeout), token);
+						TimeSpan.FromSeconds(_configurationProvider.Timeout), token);
 				}
 				/* Invalid password, does not comply to wifi password rules. */
 				else
@@ -303,9 +303,9 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			if (connected)
 			{
 				/* Save password to file, path is configured in SettingsViewModel. */
-				FileMode fileMode = _settingsViewModel.OverwriteFile ? FileMode.Create : FileMode.Append;
+				FileMode fileMode = _configurationProvider.OverwriteFile ? FileMode.Create : FileMode.Append;
 				string filePath = string.Format("{0}\\{1}",
-					_settingsViewModel.FilePath, _settingsViewModel.FileName);
+					_configurationProvider.PasswordStorageDir, _configurationProvider.FileName);
 				await _storageService.WriteToFileAsync(filePath, fileMode,
 					$"Ssid={SelectedAccessPoint.Ssid}, password={password}\n");
 
@@ -402,7 +402,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				$"Disconnecting from interface [{SelectedInterface.Description}]."));
 
 			await _mainController.DisconnectNetworkAsync(SelectedInterface,
-				TimeSpan.FromSeconds(_settingsViewModel.Timeout), CancellationToken.None);
+				TimeSpan.FromSeconds(_configurationProvider.Timeout), CancellationToken.None);
 
 			await RefreshAccessPointAsync();
 
@@ -431,7 +431,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			{
 				password = _passwordViewModel.Password;
 				bool isConnected = await _mainController.ConnectNetworkAsync(SelectedAccessPoint,
-					password, TimeSpan.FromSeconds(_settingsViewModel.Timeout), CancellationToken.None);
+					password, TimeSpan.FromSeconds(_configurationProvider.Timeout), CancellationToken.None);
 
 				if (isConnected)
 				{
