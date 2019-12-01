@@ -1,10 +1,10 @@
 # Introduction
 
 I created this prototype application to practise using Autofac, Caliburn Micro and MVVM architecture. There are still some improvements to the application that I want to make in the future, which are:
-1)Implement clean architecture using SOLID principles, in particular make WiFi and Profile class immutable. Separate UI logic from domain logic in separate modules, create separate module to Mock behaviour of WiFi library.
-2)Implement IEquatable interface in WiFi and Profile class so that datagrids maintain the selected item more easily when datagrid is refreshed.
-3)Validate XML profiles using Microsoft WiFi schema instead of parsing XML file.
-4)Use adapter pattern logic of Autofac instead of implementing it self.
+1. Implement clean architecture using SOLID principles, in particular make WiFi and Profile class immutable. Separate UI logic from domain logic in separate modules, create separate module to Mock behaviour of WiFi library.
+2. Implement IEquatable interface in WiFi and Profile class so that datagrids maintain the selected item more easily when datagrid is refreshed.
+3. Validate XML profiles using Microsoft WiFi schema instead of parsing XML file.
+4. Use adapter pattern logic of Autofac instead of implementing it self.
 
 # Easy Password Recovery WiFi
 
