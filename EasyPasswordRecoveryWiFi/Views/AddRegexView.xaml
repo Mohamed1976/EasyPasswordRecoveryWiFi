@@ -31,7 +31,7 @@
 					<Style TargetType="{x:Type TextBox}">
 						<Setter Property="IsEnabled" Value="True" />
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding IsBusy}" Value="True">
+                            <DataTrigger Binding="{Binding BusyStateManager.IsBusy}" Value="True">
 								<Setter Property="IsEnabled" Value="False" />
 							</DataTrigger>
 						</Style.Triggers>
@@ -56,7 +56,7 @@
 					<Style TargetType="{x:Type xctk:IntegerUpDown}">
 						<Setter Property="IsEnabled" Value="True" />
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding IsBusy}" Value="True">
+                            <DataTrigger Binding="{Binding BusyStateManager.IsBusy}" Value="True">
 								<Setter Property="IsEnabled" Value="False" />
 							</DataTrigger>
 						</Style.Triggers>

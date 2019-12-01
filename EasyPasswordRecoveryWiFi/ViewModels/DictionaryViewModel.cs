@@ -2,7 +2,6 @@
 using EasyPasswordRecoveryWiFi.Common;
 using EasyPasswordRecoveryWiFi.Helpers;
 using EasyPasswordRecoveryWiFi.Interfaces;
-using EasyPasswordRecoveryWiFi.Messages;
 using Microsoft.Win32;
 using System;
 using System.Collections.ObjectModel;
@@ -19,24 +18,23 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		#region [ Injected instances ]
 
 		private readonly IEventAggregator _eventAggregator = null;
-		private readonly IBusyIndicator _busyIndicator = null;
 		private readonly IErrorHandler _errorHandler = null;
-        private readonly IConfigurationProvider _configurationProvider = null;
+		private readonly IConfigurationProvider _configurationProvider = null;
 
         #endregion
 
         #region [ Constructor ]
 
         public DictionaryViewModel(IEventAggregator eventAggregator,
-			IBusyIndicator busyIndicator,
-			IErrorHandler errorHandler,
-            IConfigurationProvider configurationProvider)
+			IBusyStateManager busyStateManager,
+            IErrorHandler errorHandler,
+			IConfigurationProvider configurationProvider)
 		{
 			DisplayName = "List";
 			Dictionaries = new ObservableCollection<Dictionary>();
 			_eventAggregator = eventAggregator;
-			_busyIndicator = busyIndicator;
-			_errorHandler = errorHandler;
+			BusyStateManager = busyStateManager;
+            _errorHandler = errorHandler;
 			_configurationProvider = configurationProvider;
 		}
 
@@ -98,11 +96,13 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			get { return Dictionaries.Count == 0; }
 		}
 
-		#endregion
+        #endregion
 
-		#region [ Properties ]
+        #region [ Properties ]
 
-		private ObservableCollection<Dictionary> dictionaries = null;
+		public IBusyStateManager BusyStateManager { get; }
+
+        private ObservableCollection<Dictionary> dictionaries = null;
 		/// <summary>
 		/// Collection of dictionaries.
 		/// </summary>
@@ -167,8 +167,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		private async Task AddDictionaryAsync()
 		{
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info, "Opening OpenFileDialog."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, "Opening OpenFileDialog.");
 
 			await Task.Run(() =>
 			{
@@ -201,8 +201,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 
 			/* Select first dictionary in list. */
 			SelectedDictionary = Dictionaries.FirstOrDefault();
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
 		}
 
 		#endregion
@@ -241,8 +241,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 
@@ -277,8 +277,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 
@@ -314,8 +314,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 

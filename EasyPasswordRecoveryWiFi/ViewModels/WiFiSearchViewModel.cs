@@ -3,7 +3,6 @@ using EasyPasswordRecoveryWiFi.Common;
 using EasyPasswordRecoveryWiFi.Controllers;
 using EasyPasswordRecoveryWiFi.Helpers;
 using EasyPasswordRecoveryWiFi.Interfaces;
-using EasyPasswordRecoveryWiFi.Messages;
 using EasyPasswordRecoveryWiFi.Models.Wlan;
 using System;
 using System.Collections.Generic;
@@ -22,7 +21,6 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		private readonly IEventAggregator _eventAggregator = null;
 		private readonly IWindowManager _windowManager = null;
 		private readonly MainController _mainController = null;
-		private readonly IBusyIndicator _busyIndicator = null;
 		private readonly IErrorHandler _errorHandler = null;
 		private readonly PropertiesViewModel _propertiesViewModel = null;
 		private readonly PasswordViewModel _passwordViewModel = null;
@@ -36,26 +34,25 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		public WiFiSearchViewModel(IEventAggregator eventAggregator,
 			IWindowManager windowManager,
 			MainController mainController,
-			IBusyIndicator busyIndicator,
 			IErrorHandler errorHandler,
 			PropertiesViewModel propertiesViewModel,
 			PasswordViewModel passwordViewModel,
 			StatusBarViewModel statusBarViewModel,
-            IConfigurationProvider configurationProvider,
+			IConfigurationProvider configurationProvider,
+			IBusyStateManager busyStateManager,
 			IProfileService profileService)
 		{
 			_eventAggregator = eventAggregator;
 			_windowManager = windowManager;
 			_mainController = mainController;
-			_busyIndicator = busyIndicator;
 			_errorHandler = errorHandler;
 			_propertiesViewModel = propertiesViewModel;
 			_passwordViewModel = passwordViewModel;
 			_configurationProvider = configurationProvider;
 			_profileService = profileService;
-			statusBarViewModel.Name = "WiFiSearchStatusBar";
 			StatusBarBottom = statusBarViewModel;
-			StatusBarBottom.ConductWith(this);
+			BusyStateManager = busyStateManager;
+            StatusBarBottom.ConductWith(this);
 			WiFiAccessPointViewSource = new CollectionViewSource();
 			WiFiAccessPointViewSource.Filter += ApplyFilter;
 		}
@@ -74,9 +71,6 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		protected override void OnActivate()
 		{
-			/* Disable MainStatusBar, so that only one Status Bar is visible to the user. */
-			_eventAggregator.PublishOnUIThread(new ActivateMsg(false, "MainStatusBar"));
-			_busyIndicator.ApplicationState += HandleBusyEvent;
 			DownloadAccessPointsAsync().FireAndForgetSafeAsync(_errorHandler);
 			base.OnActivate();
 		}
@@ -87,32 +81,15 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		protected override void OnDeactivate(bool close)
 		{
 			/* Clear status messages from current Dialog Window. */
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			/* Enable MainStatusBar, because current Dialog Window is closed. */
-			_eventAggregator.PublishOnUIThread(new ActivateMsg(true, "MainStatusBar"));
-			_busyIndicator.ApplicationState -= HandleBusyEvent;
+			BusyStateManager.SetMessage(SeverityType.None);
 			base.OnDeactivate(close);
 		}
 
-		#endregion
+        #endregion
 
-		#region [ Properties ]
+        #region [ Properties ]
 
-		private bool isBusy = false;
-		/// <summary>
-		/// Busy flag used to enable/disable controls in the view using datatriggers. 
-		/// </summary>
-		public bool IsBusy
-		{
-			get { return isBusy; }
-			set
-			{
-				if (Set(ref isBusy, value))
-				{
-					NotifyOfPropertyChange();
-				}
-			}
-		}
+		public IBusyStateManager BusyStateManager { get; }
 
 		/// <summary>
 		/// StatusBar (ViewModel) on bottom of view, displays info/errors to the user.  
@@ -231,9 +208,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		private async Task DownloadAccessPointsAsync()
 		{
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				"Retrieving access points and interfaces."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, "Retrieving access points and interfaces.");
 
 			/* Temporary store selected interface and access point so they can be restored after download. */
 			Guid? interfaceId = SelectedInterface?.Id;
@@ -283,8 +259,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				SelectedAccessPoint = selectedAccessPoint;
 			}
 
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
 		}
 
 		/// <summary>
@@ -292,17 +268,17 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		public async Task DisconnectAsync()
 		{
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				$"Disconnecting from interface [{SelectedInterface.Description}]."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, 
+				$"Disconnecting from interface [{SelectedInterface.Description}].");
 
 			await _mainController.DisconnectNetworkAsync(SelectedInterface,
 				TimeSpan.FromSeconds(_configurationProvider.Timeout), CancellationToken.None);
 
 			await DownloadAccessPointsAsync();
 
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
 		}
 
 		/// <summary>
@@ -315,9 +291,9 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			string password = null;
 			string msg = null;
 
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				$"Connecting to access point [{SelectedAccessPoint.Ssid}]."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info,
+				$"Connecting to access point [{SelectedAccessPoint.Ssid}].");
 
 			/* Check if profile generation is implemented for Access Point. */
 			/* If profile generation is not implemented an Exception will be thrown. */
@@ -349,15 +325,15 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 					msg = $"Failed to connect to access point [{SelectedAccessPoint.Ssid}].";
 				}
 
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info, msg));
-			}
+				BusyStateManager.SetMessage(SeverityType.Info, msg);
+            }
 
 			if (SelectedAccessPoint.IsPasswordRequired && !dialogResult)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
+				BusyStateManager.SetMessage(SeverityType.None);
 			}
 
-			_busyIndicator.IsBusy = false;
+			BusyStateManager.ExitBusy();
 		}
 
 		#endregion
@@ -384,8 +360,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 
@@ -491,8 +467,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 
@@ -516,18 +492,6 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 
 				return canSelect;
 			}
-		}
-
-		#endregion
-
-		#region [ Event handlers ]
-
-		/// <summary>
-		/// Busy event used to set the <see cref="IsBusy"/> flag.  
-		/// </summary>
-		private void HandleBusyEvent(object sender, BusyEventArgs e)
-		{
-			IsBusy = e.IsBusy;
 		}
 
 		#endregion

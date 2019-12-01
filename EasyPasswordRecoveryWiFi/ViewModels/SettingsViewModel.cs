@@ -1,8 +1,5 @@
 ﻿using Caliburn.Micro;
-using EasyPasswordRecoveryWiFi.Common;
 using EasyPasswordRecoveryWiFi.Interfaces;
-using System;
-using System.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace EasyPasswordRecoveryWiFi.ViewModels
@@ -13,8 +10,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 
 		public SettingsViewModel(IConfigurationProvider configurationProvider)
 		{
-            ConfigurationProvider = configurationProvider;
-        }
+			ConfigurationProvider = configurationProvider;
+		}
 
         #endregion
 
@@ -23,7 +20,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
         /// <summary>
         /// Reference to ConfigurationProvider which stores and provides all application settings.    
         /// </summary>
-        public IConfigurationProvider ConfigurationProvider { get; private set; }
+		public IConfigurationProvider ConfigurationProvider { get; private set; }
 
         #endregion
 
@@ -42,7 +39,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			dialog.IsFolderPicker = true;
 			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
 			{
-                ConfigurationProvider.PasswordStorageDir = dialog.FileName;
+				ConfigurationProvider.PasswordStorageDir = dialog.FileName;
 			}
 		}
 

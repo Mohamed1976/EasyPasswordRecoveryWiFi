@@ -3,7 +3,6 @@ using EasyPasswordRecoveryWiFi.Common;
 using EasyPasswordRecoveryWiFi.Controllers;
 using EasyPasswordRecoveryWiFi.Helpers;
 using EasyPasswordRecoveryWiFi.Interfaces;
-using EasyPasswordRecoveryWiFi.Messages;
 using EasyPasswordRecoveryWiFi.Models.Wlan;
 using Microsoft.Win32;
 using System;
@@ -24,7 +23,6 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		private readonly IEventAggregator _eventAggregator = null;
 		private readonly IErrorHandler _errorHandler = null;
 		private readonly IProfileService _profileService = null;
-		private readonly IBusyIndicator _busyIndicator = null;
 		private readonly IWindowManager _windowManager = null;
 		private readonly PropertiesViewModel _propertiesViewModel = null;
 		private readonly IConfigurationProvider _configurationProvider = null;
@@ -38,16 +36,16 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			IWindowManager windowManager,
 			IErrorHandler errorHandler,
 			IProfileService profileService,
-			IBusyIndicator busyIndicator,
+			IBusyStateManager busyStateManager,
 			PropertiesViewModel propertiesViewModel,
-            IConfigurationProvider configurationProvider)
+			IConfigurationProvider configurationProvider)
 		{
 			_mainController = mainController;
 			_eventAggregator = eventAggregator;
 			_errorHandler = errorHandler;
 			_profileService = profileService;
-			_busyIndicator = busyIndicator;
-			_windowManager = windowManager;
+			BusyStateManager = busyStateManager;
+            _windowManager = windowManager;
 			_propertiesViewModel = propertiesViewModel;
 			_configurationProvider = configurationProvider;
 			WiFiProfilesViewSource = new CollectionViewSource();
@@ -68,36 +66,20 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		protected override void OnActivate()
 		{
-			_busyIndicator.ApplicationState += HandleBusyEvent;
 			DownloadProfilesAsync().FireAndForgetSafeAsync(_errorHandler);
 			base.OnActivate();
 		}
 
 		protected override void OnDeactivate(bool close)
 		{
-			_busyIndicator.ApplicationState -= HandleBusyEvent;
 			base.OnDeactivate(close);
 		}
 
-		#endregion
+        #endregion
 
-		#region [ Properties ]
+        #region [ Properties ]
 
-		private bool isBusy;
-		/// <summary>
-		/// Busy flag used to enable/disable controls in the view. 
-		/// </summary>
-		public bool IsBusy
-		{
-			get { return isBusy; }
-			set
-			{
-				if (Set(ref isBusy, value))
-				{
-					NotifyOfPropertyChange();
-				}
-			}
-		}
+		public IBusyStateManager BusyStateManager { get; }
 
 		private ObservableCollection<Profile> wiFiProfiles;
 		/// <summary>
@@ -213,9 +195,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		private async Task DownloadProfilesAsync()
 		{
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				"Retrieving profiles and interfaces."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, "Retrieving profiles and interfaces.");
 
 			/* Temporary store selected interface and wifi profile so they can be restored after download. */
 			Guid? interfaceId = SelectedInterface?.Id;
@@ -250,18 +231,17 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				SelectedWiFiProfile = selectedWifiProfile;
 			}
 
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
-		}
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
+        }
 
 		/// <summary>
 		/// Remove the selected profile.  
 		/// </summary>
 		private async Task RemoveProfileAsync()
 		{
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				"Removing selected profile."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, "Removing selected profile.");
 
 			/* Temporary store selected interface and WiFi profile so they can be restored after deletion. */
 			Guid selectedInterfaceId = SelectedInterface.Id;
@@ -288,57 +268,55 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 				SelectedWiFiProfile = selectedWifiProfile;
 			}
 
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
-		}
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
+        }
 
 		/// <summary>
 		/// Set the selected profile as default connection profile (position 0).  
 		/// </summary>
 		private async Task MakeProfileDefaultAsync()
 		{
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				"Setting the selected profile as the default connection profile."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, 
+				"Setting the selected profile as the default connection profile.");
 
 			await _mainController.SetProfileAsDefaultAsync(SelectedWiFiProfile);
 			await DownloadProfilesAsync();
 
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
-		}
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
+        }
 
-		/// <summary>
-		/// Increase the priority of the selected profile.  
-		/// </summary>
-		private async Task IncreasePriorityAsync()
+        /// <summary>
+        /// Increase the priority of the selected profile.  
+        /// </summary>
+        private async Task IncreasePriorityAsync()
 		{
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				"Increasing priority of the selected profile."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, "Increasing priority of the selected profile.");
 
 			await _mainController.MoveUpProfileAsync(SelectedWiFiProfile);
 			await DownloadProfilesAsync();
 
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
-		}
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
+        }
 
-		/// <summary>
-		/// Decrease the priority of the selected profile.  
-		/// </summary>
-		private async Task DecreasePriorityAsync()
+        /// <summary>
+        /// Decrease the priority of the selected profile.  
+        /// </summary>
+        private async Task DecreasePriorityAsync()
 		{
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				"Decreasing priority of the selected profile."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, "Decreasing priority of the selected profile.");
 
 			await _mainController.MoveDownProfileAsync(SelectedWiFiProfile);
 			await DownloadProfilesAsync();
 
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
-		}
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
+        }
 
 		/// <summary>
 		/// Exporting the selected WiFi XML profile to file. The profile retrieved from
@@ -346,9 +324,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		private async Task ExportProfileAsync()
 		{
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				"Opening SaveFileDialog."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, "Opening SaveFileDialog.");
 
 			await Task.Run(() =>
 			{
@@ -363,17 +340,16 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 
 				if (result)
 				{
-					_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-						"Exporting profile."));
+					BusyStateManager.SetMessage(SeverityType.Info, "Exporting profile.");
 					File.WriteAllText(dlg.FileName, _profileService.Format(SelectedWiFiProfile.Xml));
 					/* Save last visited directory. */
 					_configurationProvider.ExportDir = Path.GetDirectoryName(dlg.FileName);
 				}
 			});
 
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
-		}
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
+        }
 
 		/// <summary>
 		/// Imports WiFi XML profile from file. After validation, the imported profile is added
@@ -383,9 +359,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		{
 			bool isValid = false;
 
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				"Opening OpenFileDialog."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, "Opening OpenFileDialog.");
 
 			OpenFileDialog dlg = new OpenFileDialog();
 			dlg.DefaultExt = ".xml"; // Default file extension
@@ -404,8 +379,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 
 				if (isValid)
 				{
-					_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-						"Importing profile."));
+					BusyStateManager.SetMessage(SeverityType.Info, "Importing profile.");
 					isValid = await _mainController.AddProfileAsync(SelectedInterface, profileXml);
 					await DownloadProfilesAsync();
 				}
@@ -416,15 +390,15 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 
 			if (result && !isValid)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error,
-					"Failed to validate the profile, please check the file."));
+				BusyStateManager.SetMessage(SeverityType.Error,
+					"Failed to validate the profile, please check the file.");
 			}
 			else
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
+				BusyStateManager.SetMessage(SeverityType.None);
 			}
 
-			_busyIndicator.IsBusy = false;
+			BusyStateManager.ExitBusy();
 		}
 
 		#endregion
@@ -602,8 +576,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 
@@ -623,18 +597,6 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 
 				return canShowProperties;
 			}
-		}
-
-		#endregion
-
-		#region [ Event handlers]
-
-		/// <summary>
-		/// Busy event used to set the <see cref="IsBusy"/> flag.  
-		/// </summary>
-		private void HandleBusyEvent(object sender, BusyEventArgs e)
-		{
-			IsBusy = e.IsBusy;
 		}
 
 		#endregion

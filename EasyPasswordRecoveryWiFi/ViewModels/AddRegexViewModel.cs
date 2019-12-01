@@ -2,7 +2,6 @@
 using EasyPasswordRecoveryWiFi.Common;
 using EasyPasswordRecoveryWiFi.Helpers;
 using EasyPasswordRecoveryWiFi.Interfaces;
-using EasyPasswordRecoveryWiFi.Messages;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
@@ -15,7 +14,6 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		#region [ Injected instances ]
 
 		private readonly IRegExService _regExService = null;
-		private readonly IBusyIndicator _busyIndicator = null;
 		private readonly IErrorHandler _errorHandler = null;
 		private readonly IEventAggregator _eventAggregator = null;
 
@@ -24,17 +22,16 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		#region [ Constructor ]
 
 		public AddRegexViewModel(IEventAggregator eventAggregator,
-			IBusyIndicator busyIndicator,
 			IErrorHandler errorHandler,
 			IRegExService regExService,
+			IBusyStateManager busyStateManager,
 			StatusBarViewModel statusBarViewModel)
 		{
 			_eventAggregator = eventAggregator;
-			_busyIndicator = busyIndicator;
 			_errorHandler = errorHandler;
 			_regExService = regExService;
-			statusBarViewModel.Name = "RegExStatusBar";
-			StatusBarBottom = statusBarViewModel;
+			BusyStateManager = busyStateManager;
+            StatusBarBottom = statusBarViewModel;
 			StatusBarBottom.ConductWith(this);
 		}
 
@@ -52,12 +49,12 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		protected override void OnActivate()
 		{
-			MaxRows = 100;
+			/* When IsBusy is changed, CanCancelCmd, CanStopCmd, CanSelectCmd and CanStartCmd are notified. */
+			BusyStateManager.PropertyChanged += BusyStateManagerPropertyChanged;
+
+            MaxRows = 100;
 			RegEx = null;
 			RegExMatches?.Clear();
-			/* Disable MainStatusBar, so that only one Status Bar is visible to the user. */
-			_eventAggregator.PublishOnUIThread(new ActivateMsg(false, "MainStatusBar"));
-			_busyIndicator.ApplicationState += HandleBusyEvent;
 			base.OnActivate();
 		}
 
@@ -66,37 +63,17 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		protected override void OnDeactivate(bool close)
 		{
+			BusyStateManager.PropertyChanged -= BusyStateManagerPropertyChanged;
 			/* Clear status messages from current Dialog Window. */
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			/* Enable MainStatusBar, because current Dialog Window is closed. */
-			_eventAggregator.PublishOnUIThread(new ActivateMsg(true, "MainStatusBar"));
-			_busyIndicator.ApplicationState -= HandleBusyEvent;
+			BusyStateManager.SetMessage(SeverityType.None);
 			base.OnDeactivate(close);
 		}
 
-		#endregion
+        #endregion
 
-		#region [ Properties ]
+        #region [ Properties ]
 
-		private bool isBusy = false;
-		/// <summary>
-		/// Busy flag used to enable/disable controls. 
-		/// </summary>
-		public bool IsBusy
-		{
-			get { return isBusy; }
-			set
-			{
-				if (Set(ref isBusy, value))
-				{
-					NotifyOfPropertyChange();
-					NotifyOfPropertyChange(nameof(CanStartCmd));
-					NotifyOfPropertyChange(nameof(CanStopCmd));
-					NotifyOfPropertyChange(nameof(CanCancelCmd));
-					NotifyOfPropertyChange(nameof(CanSelectCmd));
-				}
-			}
-		}
+		public IBusyStateManager BusyStateManager { get; }
 
 		/// <summary>
 		/// Status Bar to display info/errors. 
@@ -163,9 +140,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		private async Task GenerateStrings(CancellationToken token)
 		{
 			List<string> matches = new List<string>();
-			_busyIndicator.IsBusy = true;
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-				"Generating strings that match the specified RegEx."));
+			BusyStateManager.EnterBusy();
+			BusyStateManager.SetMessage(SeverityType.Info, "Generating strings that match the specified RegEx.");
 
 			await Task.Run(() =>
 			{
@@ -186,8 +162,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 
 			RegExMatches = new ObservableCollection<string>(matches);
 
-			_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.None));
-			_busyIndicator.IsBusy = false;
+			BusyStateManager.SetMessage(SeverityType.None);
+			BusyStateManager.ExitBusy();
 		}
 
 		#endregion
@@ -206,8 +182,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			else
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-					"Please enter a valid regular expression."));
+				BusyStateManager.SetMessage(SeverityType.Info, "Please enter a valid regular expression.");
 			}
 		}
 
@@ -216,7 +191,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		public bool CanStartCmd
 		{
-			get { return !IsBusy; }
+			get { return !BusyStateManager.IsBusy; }
 		}
 
 		/// <summary>
@@ -232,7 +207,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		public bool CanStopCmd
 		{
-			get { return IsBusy; }
+			get { return BusyStateManager.IsBusy; }
 		}
 
 		/// <summary>
@@ -246,8 +221,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			else
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Info,
-					"Please enter a valid regular expression."));
+				BusyStateManager.SetMessage(SeverityType.Info, "Please enter a valid regular expression.");
 			}
 		}
 
@@ -256,7 +230,7 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		public bool CanSelectCmd
 		{
-			get { return !IsBusy; }
+			get { return !BusyStateManager.IsBusy; }
 		}
 
 		/// <summary>
@@ -272,21 +246,25 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		/// </summary>
 		public bool CanCancelCmd
 		{
-			get { return !IsBusy; }
+			get { return !BusyStateManager.IsBusy; }
 		}
 
 		#endregion
 
-		#region [ Event handlers ]
+		#region [ Event Handlers ]
 
-		/// <summary>
-		/// Busy event used to set the <see cref="IsBusy"/> flag.  
-		/// </summary>
-		private void HandleBusyEvent(object sender, BusyEventArgs e)
+		/* When IsBusy is changed, CanCancelCmd, CanStopCmd, CanSelectCmd and CanStartCmd are notified. */
+		private void BusyStateManagerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			IsBusy = e.IsBusy;
+			if (e.PropertyName == nameof(BusyStateManager.IsBusy))
+			{
+				NotifyOfPropertyChange(nameof(CanStartCmd));
+				NotifyOfPropertyChange(nameof(CanStopCmd));
+				NotifyOfPropertyChange(nameof(CanCancelCmd));
+				NotifyOfPropertyChange(nameof(CanSelectCmd));
+			}
 		}
 
 		#endregion
-	}
+    }
 }

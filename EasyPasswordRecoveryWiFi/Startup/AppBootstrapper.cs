@@ -54,8 +54,8 @@ namespace EasyPasswordRecoveryWiFi.Startup
 			builder.RegisterType<ProfileFactory>().As<IProfileFactory>();
 			builder.RegisterType<StorageService>().As<IStorageService>();
 			builder.RegisterType<RegExService>().As<IRegExService>().SingleInstance();
-			builder.RegisterType<BusyIndicator>().As<IBusyIndicator>().SingleInstance();
-            builder.RegisterType<ConfigurationProvider>().As<IConfigurationProvider>().SingleInstance();
+			builder.RegisterType<ConfigurationProvider>().As<IConfigurationProvider>().SingleInstance();
+			builder.RegisterType<BusyStateManager>().As<IBusyStateManager>().SingleInstance();
 #if MOCK_DATA
             builder.RegisterType<MockWiFiAdapter>().As<IWiFiService>();
 #else

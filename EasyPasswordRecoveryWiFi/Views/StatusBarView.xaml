@@ -19,8 +19,8 @@
 						</DataTrigger>
 						<MultiDataTrigger>
 							<MultiDataTrigger.Conditions>
-								<Condition Binding="{Binding IsBusy}" Value="False"></Condition>
-								<Condition Binding="{Binding StatusMessage}" Value="{x:Static sys:String.Empty}"></Condition>
+                                <Condition Binding="{Binding BusyStateManager.IsBusy}" Value="False"></Condition>
+                                <Condition Binding="{Binding BusyStateManager.Message}" Value="{x:Static sys:String.Empty}"></Condition>
 							</MultiDataTrigger.Conditions>
 							<MultiDataTrigger.Setters>
 								<Setter Property="Visibility" Value="Collapsed" />
@@ -28,8 +28,8 @@
 						</MultiDataTrigger>
 						<MultiDataTrigger>
 							<MultiDataTrigger.Conditions>
-								<Condition Binding="{Binding IsBusy}" Value="False"></Condition>
-								<Condition Binding="{Binding StatusMessage}" Value="{x:Null}"></Condition>
+                                <Condition Binding="{Binding BusyStateManager.IsBusy}" Value="False"></Condition>
+                                <Condition Binding="{Binding BusyStateManager.Message}" Value="{x:Null}"></Condition>
 							</MultiDataTrigger.Conditions>
 							<MultiDataTrigger.Setters>
 								<Setter Property="Visibility" Value="Collapsed" />
@@ -58,7 +58,7 @@
 					<Style TargetType="StatusBarItem">
 						<Setter Property="Visibility" Value="Visible" />
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding IsBusy}" Value="False">
+                            <DataTrigger Binding="{Binding BusyStateManager.IsBusy}" Value="False">
 								<Setter Property="Visibility" Value="Collapsed" />
 							</DataTrigger>
 						</Style.Triggers>
@@ -71,7 +71,7 @@
 					<Style TargetType="{x:Type Separator}">
 						<Setter Property="Visibility" Value="Visible" />
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding IsBusy}" Value="False">
+                            <DataTrigger Binding="{Binding BusyStateManager.IsBusy}" Value="False">
 								<Setter Property="Visibility" Value="Collapsed" />
 							</DataTrigger>
 						</Style.Triggers>
@@ -79,7 +79,7 @@
 				</Separator.Style>
 			</Separator>
 			<StatusBarItem Grid.Column="2">
-				<TextBlock Text="{Binding StatusMessage}"></TextBlock>
+                <TextBlock Text="{Binding BusyStateManager.Message}"></TextBlock>
 			</StatusBarItem>
 		</StatusBar>
 	</Grid>

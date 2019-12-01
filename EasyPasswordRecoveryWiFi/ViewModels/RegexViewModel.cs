@@ -2,7 +2,6 @@
 using EasyPasswordRecoveryWiFi.Common;
 using EasyPasswordRecoveryWiFi.Helpers;
 using EasyPasswordRecoveryWiFi.Interfaces;
-using EasyPasswordRecoveryWiFi.Messages;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -17,7 +16,6 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 		private readonly AddRegexViewModel _addRegexViewModel = null;
 		private readonly IWindowManager _windowManager = null;
 		private readonly IRegExService _regExService = null;
-		private readonly IBusyIndicator _busyIndicator = null;
 
 		#endregion
 
@@ -27,14 +25,14 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			IEventAggregator eventAggregator,
 			AddRegexViewModel addRegexViewModel,
 			IRegExService regExService,
-			IBusyIndicator busyIndicator)
+			IBusyStateManager busyStateManager)
 		{
 			_windowManager = windowManager;
 			_eventAggregator = eventAggregator;
 			_addRegexViewModel = addRegexViewModel;
 			_regExService = regExService;
-			_busyIndicator = busyIndicator;
-			PasswordRegExs = new ObservableCollection<PasswordRegEx>();
+			BusyStateManager = busyStateManager;
+            PasswordRegExs = new ObservableCollection<PasswordRegEx>();
 			DisplayName = "Smart";
 		}
 
@@ -94,11 +92,13 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region [ Properties ]
+        #region [ Properties ]
 
-		private ObservableCollection<PasswordRegEx> passwordRegExs = null;
+		public IBusyStateManager BusyStateManager { get; }
+
+        private ObservableCollection<PasswordRegEx> passwordRegExs = null;
 		/// <summary>
 		/// Collection of regular expressions used to generate passwords.
 		/// </summary>
@@ -152,8 +152,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 
@@ -180,8 +180,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 
@@ -216,8 +216,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 
@@ -253,8 +253,8 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			}
 			catch (Exception ex)
 			{
-				_eventAggregator.PublishOnUIThread(new StatusMsg(SeverityType.Error, ex.Message));
-				_busyIndicator.ResetState();
+				BusyStateManager.SetMessage(SeverityType.Error, ex.Message);
+				BusyStateManager.ClearBusy();
 			}
 		}
 

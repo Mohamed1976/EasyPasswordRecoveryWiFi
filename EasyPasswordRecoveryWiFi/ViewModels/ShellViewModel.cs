@@ -34,7 +34,6 @@ namespace EasyPasswordRecoveryWiFi.ViewModels
 			_profileManagerViewModel = profileManagerViewModel;
 			LeftMenu = leftMenuViewModel;
 			HeaderMenu = headerMenuViewModel;
-			statusBarViewModel.Name = "MainStatusBar";
 			StatusBarBottom = statusBarViewModel;
 			StatusBarBottom.ConductWith(this);
 		}
