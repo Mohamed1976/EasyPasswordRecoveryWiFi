@@ -5,6 +5,7 @@ I created this prototype application to practise using Autofac, Caliburn Micro a
 2. Implement IEquatable interface in WiFi and Profile class so that datagrids maintain the selected item more easily when datagrid is refreshed.
 3. Validate XML profiles using Microsoft WiFi schema instead of parsing XML file.
 4. Use adapter pattern logic of Autofac instead of implementing it self.
+5. Use MahApps.Metro UI and HamburgerMenu.
 
 # Easy Password Recovery WiFi
 
