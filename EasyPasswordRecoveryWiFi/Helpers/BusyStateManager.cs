@@ -16,12 +16,12 @@ namespace EasyPasswordRecoveryWiFi.Helpers
     /// </summary>
     public class BusyStateManager : PropertyChangedBase, IBusyStateManager
     {
-		private readonly object isBusyLock = new object();
-		private readonly object messageLock = new object();
+	private readonly object isBusyLock = new object();
+	private readonly object messageLock = new object();
 
-		private int _busyCounter;
-        private string _message;
-        private bool _isBusy;
+	private int _busyCounter;
+	private string _message;
+	private bool _isBusy;
 
         public BusyStateManager()
         {
@@ -52,52 +52,55 @@ namespace EasyPasswordRecoveryWiFi.Helpers
 
         public void ClearBusy()
         {
-            _busyCounter = 0;
-            IsBusy = false;
+		lock (isBusyLock)
+		{
+            		_busyCounter = 0;
+            		IsBusy = false;
+	    	}
         }
 
         public void EnterBusy()
         {
-			lock (isBusyLock)
+		lock (isBusyLock)
+		{
+			_busyCounter++;
+			if (_busyCounter == 1)
 			{
-				_busyCounter++;
-				if (_busyCounter == 1)
-				{
-					IsBusy = true;
-				}
+				IsBusy = true;
 			}
+		}
         }
 
         public void ExitBusy()
         {
-			lock (isBusyLock)
+		lock (isBusyLock)
+		{
+			if (_busyCounter == 0)
 			{
-				if (_busyCounter == 0)
-				{
-					throw new InvalidOperationException("BusyCounter is already zero.");
-				}
-
-				_busyCounter--;
-				if (_busyCounter == 0)
-				{
-					IsBusy = false;
-				}
+				throw new InvalidOperationException("BusyCounter is already zero.");
 			}
+
+			_busyCounter--;
+			if (_busyCounter == 0)
+			{
+				IsBusy = false;
+			}
+		}
         }
 
         public void SetMessage(SeverityType severityType, string message = null)
         {
-			lock (messageLock)
+		lock (messageLock)
+		{
+			if(severityType == SeverityType.None || string.IsNullOrEmpty(message))
 			{
-				if(severityType == SeverityType.None || string.IsNullOrEmpty(message))
-				{
-					Message = string.Empty;
-				}
-				else
-				{
-					Message = string.Format("{0}: {1}", severityType, message);
-				}
+				Message = string.Empty;
+			}
+			else
+			{
+				Message = string.Format("{0}: {1}", severityType, message);
 			}
 		}
+	}
     }
 }
